@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Afridi Multi Downloader</title>
+    <meta name="description" content="Download videos from YouTube, TikTok, Instagram, Facebook, Twitter and more. Paste a link, pick a quality, download." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#eef0f7;
+        --ink:#131428;
+        --ink-2:#454a68;
+        --ink-3:#767da0;
+        --glass:rgba(255,255,255,.55);
+        --glass-strong:rgba(255,255,255,.72);
+        --glass-soft:rgba(255,255,255,.38);
+        --glass-line:rgba(255,255,255,.65);
+        --line:rgba(38,42,90,.12);
+        --field:rgba(255,255,255,.85);
+        --violet:#7c3aed;
+        --violet-deep:#6d28d9;
+        --pink:#db2777;
+        --pink-hot:#ec4899;
+        --grad:linear-gradient(120deg,#8b5cf6 0%,#d946ef 52%,#ec4899 100%);
+        --accent:#7c3aed;
+        --gold:#b8860b;
+        --gold-soft:rgba(245,197,66,.18);
+        --danger:#b3372c;
+        --danger-soft:rgba(219,60,48,.10);
+        --shadow:0 24px 60px rgba(46,32,110,.16);
+        --shadow-sm:0 10px 26px rgba(46,32,110,.10);
+        --blob-a:rgba(139,92,246,.34);
+        --blob-b:rgba(236,72,153,.28);
+        --blob-c:rgba(56,130,246,.24);
+        --radius:20px;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#07081a;
+          --ink:#f2f2fb;
+          --ink-2:#b9bce0;
+          --ink-3:#7d81ad;
+          --glass:rgba(255,255,255,.055);
+          --glass-strong:rgba(255,255,255,.09);
+          --glass-soft:rgba(255,255,255,.035);
+          --glass-line:rgba(255,255,255,.13);
+          --line:rgba(255,255,255,.10);
+          --field:rgba(10,11,32,.72);
+          --violet:#a78bfa;
+          --violet-deep:#8b5cf6;
+          --pink:#f472b6;
+          --pink-hot:#ec4899;
+          --accent:#a78bfa;
+          --gold:#f5c542;
+          --gold-soft:rgba(245,197,66,.14);
+          --danger:#ff8a7d;
+          --danger-soft:rgba(255,110,95,.12);
+          --shadow:0 24px 60px rgba(0,0,0,.5);
+          --shadow-sm:0 10px 26px rgba(0,0,0,.38);
+          --blob-a:rgba(124,58,237,.42);
+          --blob-b:rgba(219,39,119,.34);
+          --blob-c:rgba(37,99,235,.30);
+        }
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{
+        margin:0;
+        font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+        background:var(--bg);
+        color:var(--ink);
+        line-height:1.55;
+        -webkit-font-smoothing:antialiased;
+        position:relative;
+        overflow-x:hidden;
+      }
+      /* Ambient gradient field the glass floats over */
+      body::before{
+        content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+        background:
+          radial-gradient(560px 420px at 12% -40px, var(--blob-a), transparent 65%),
+          radial-gradient(620px 480px at 88% 6%, var(--blob-b), transparent 65%),
+          radial-gradient(700px 560px at 50% 108%, var(--blob-c), transparent 65%),
+          var(--bg);
+      }
+      body::after{
+        content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;
+        background-image:radial-gradient(rgba(127,131,190,.16) 1px, transparent 1px);
+        background-size:26px 26px;
+        -webkit-mask-image:linear-gradient(180deg,transparent,#000 12%,#000 55%,transparent 95%);
+                mask-image:linear-gradient(180deg,transparent,#000 12%,#000 55%,transparent 95%);
+      }
+      h1,h2,h3{font-family:"Sora",sans-serif;margin:0;line-height:1.15}
+      a{color:var(--accent)}
+      button{font:inherit;cursor:pointer}
+      input{font:inherit}
+      .wrap{max-width:1060px;margin:0 auto;padding:0 20px}
+
+      .glass{
+        background:var(--glass);
+        border:1px solid var(--glass-line);
+        -webkit-backdrop-filter:blur(18px) saturate(150%);
+        backdrop-filter:blur(18px) saturate(150%);
+        box-shadow:var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,.18);
+      }
+
+      /* ---------- Top bar ---------- */
+      .topbar{
+        position:sticky;top:0;z-index:20;
+        background:var(--glass-soft);
+        border-bottom:1px solid var(--line);
+        -webkit-backdrop-filter:blur(16px) saturate(150%);
+        backdrop-filter:blur(16px) saturate(150%);
+      }
+      .topbar-in{display:flex;align-items:center;gap:12px;padding:12px 0}
+      .brand-mark{
+        width:40px;height:40px;flex:0 0 40px;border-radius:12px;
+        background:var(--grad);color:#fff;
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:0 8px 20px rgba(168,85,247,.4);
+      }
+      .brand-mark svg{width:22px;height:22px}
+      .brand-name{font-family:"Sora",sans-serif;font-weight:800;font-size:1rem;line-height:1.2}
+      .brand-tag{font-size:.72rem;color:var(--pink);font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+      .topbar .spacer{flex:1}
+      .live-pill{
+        display:inline-flex;align-items:center;gap:8px;
+        border:1px solid var(--glass-line);border-radius:999px;
+        background:var(--glass);padding:7px 14px;
+        font-size:.8rem;font-weight:800;color:var(--ink-2);
+        cursor:pointer;user-select:none;white-space:nowrap;
+      }
+      .live-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.18)}
+      .live-pill.online .live-dot{background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.18)}
+      .live-pill.online{color:var(--ink)}
+      .live-pill.offline .live-dot{background:#ef4444;box-shadow:0 0 0 4px rgba(239,68,68,.18)}
+      .live-pill.offline{color:var(--danger)}
+      .live-pill.checking .live-dot{animation:pillPulse 1s ease-in-out infinite}
+      @keyframes pillPulse{0%,100%{opacity:1}50%{opacity:.35}}
+      @media (prefers-reduced-motion: reduce){.live-pill.checking .live-dot{animation:none}}
+
+      /* ---------- Hero ---------- */
+      .hero{padding:54px 0 8px;text-align:center}
+      .hero-badge{
+        display:inline-flex;align-items:center;gap:8px;
+        border:1px solid var(--glass-line);border-radius:999px;
+        background:var(--glass);padding:7px 16px;
+        font-size:.82rem;font-weight:700;color:var(--ink-2);
+        -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+      }
+      .hero-badge .pulse{width:8px;height:8px;border-radius:50%;background:#22c55e}
+      .hero-badge b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+      .hero h1{
+        margin:22px auto 0;max-width:15ch;
+        font-size:clamp(2.1rem,6vw,3.6rem);font-weight:800;letter-spacing:-.02em;line-height:1.08;
+      }
+      .hero h1 .grad{
+        background:linear-gradient(100deg,#8b5cf6,#e879f9 55%,#f472b6);
+        -webkit-background-clip:text;background-clip:text;color:transparent;
+      }
+      .hero p.lead{margin:18px auto 0;max-width:58ch;font-size:1.05rem;color:var(--ink-2);font-weight:500}
+
+      .platform-chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:24px}
+      .chip{
+        display:inline-flex;align-items:center;gap:8px;
+        background:var(--glass);border:1px solid var(--glass-line);
+        -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+        padding:8px 14px;border-radius:12px;
+        font-size:.85rem;font-weight:800;color:var(--ink);
+      }
+      .chip svg{width:16px;height:16px}
+      .chip .c-insta{color:#e1306c}.chip .c-yt{color:#ff3b30}.chip .c-tt{color:#22d3ee}
+      .chip .c-fb{color:#3b82f6}.chip .c-more{color:var(--violet)}
+
+      /* ---------- Downloader console ---------- */
+      .console{
+        margin-top:34px;border-radius:24px;padding:14px;
+        text-align:left;box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.2);
+      }
+      .dl-row{display:flex;gap:12px}
+      .input-wrap{position:relative;flex:1;min-width:0}
+      .input-wrap > svg{
+        position:absolute;left:16px;top:50%;transform:translateY(-50%);
+        width:19px;height:19px;color:var(--ink-3);pointer-events:none;
+      }
+      #urlInput{
+        width:100%;padding:16px 150px 16px 46px;
+        border:1.5px solid var(--line);border-radius:15px;
+        background:var(--field);color:var(--ink);
+        font-size:1rem;font-weight:600;outline:none;
+        transition:border-color .15s ease, box-shadow .15s ease;
+      }
+      #urlInput:focus{border-color:var(--violet-deep);box-shadow:0 0 0 4px rgba(168,85,247,.22)}
+      #urlInput::placeholder{color:var(--ink-3);font-weight:500}
+      .input-actions{position:absolute;right:9px;top:50%;transform:translateY(-50%);display:flex;gap:6px}
+      .mini-btn{
+        border:1px solid var(--line);background:var(--glass-strong);color:var(--ink-2);
+        border-radius:9px;padding:7px 12px;font-size:.8rem;font-weight:800;
+        display:inline-flex;align-items:center;gap:6px;
+      }
+      .mini-btn:hover{color:var(--accent);border-color:var(--accent)}
+      .mini-btn svg{width:13px;height:13px}
+      .mini-btn[hidden]{display:none}
+      #fetchBtn{
+        border:none;border-radius:15px;padding:16px 28px;
+        background:var(--grad);color:#fff;
+        font-weight:800;font-size:1rem;white-space:nowrap;
+        display:inline-flex;align-items:center;gap:9px;
+        box-shadow:0 12px 28px rgba(217,70,239,.35);
+        transition:filter .15s ease, transform .1s ease;
+      }
+      #fetchBtn:hover{filter:brightness(1.08)}
+      #fetchBtn:active{transform:scale(.98)}
+      #fetchBtn:disabled{opacity:.65;cursor:wait}
+      #fetchBtn svg{width:18px;height:18px}
+      .console-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 6px 2px}
+      .detected{font-size:.86rem;font-weight:700;color:var(--ink-2);min-height:1.3em;flex:1;min-width:200px}
+      .detected b{color:var(--accent)}
+      .hint{font-size:.82rem;color:var(--ink-3);font-weight:600;margin:0}
+
+      /* ---------- Status / result ---------- */
+      .status-box{
+        margin:16px 6px 6px;border-radius:14px;padding:16px 18px;
+        display:none;align-items:flex-start;gap:13px;font-weight:600;
+      }
+      .status-box.show{display:flex}
+      .status-box svg{width:22px;height:22px;flex:0 0 22px;margin-top:1px}
+      .status-box.loading{background:rgba(139,92,246,.12);border:1px solid rgba(168,85,247,.3);color:var(--ink)}
+      .status-box.error{background:var(--danger-soft);border:1px solid rgba(219,60,48,.3);color:var(--danger)}
+      .spinner{
+        width:22px;height:22px;flex:0 0 22px;border-radius:50%;
+        border:3px solid var(--line);border-top-color:var(--violet);
+        animation:spin .8s linear infinite;margin-top:1px;
+      }
+      @keyframes spin{to{transform:rotate(360deg)}}
+      @media (prefers-reduced-motion: reduce){
+        .spinner{animation-duration:2.4s}
+        html{scroll-behavior:auto}
+      }
+
+      .result{display:none;margin:8px 6px 6px}
+      .result.show{display:block}
+      .thumb-wrap{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--glass-line)}
+      .thumb{width:100%;aspect-ratio:16/8.2;object-fit:cover;display:block;background:var(--glass-soft)}
+      .thumb-fallback{
+        width:100%;aspect-ratio:16/8.2;background:rgba(139,92,246,.12);
+        display:flex;align-items:center;justify-content:center;color:var(--accent);
+      }
+      .thumb-fallback svg{width:44px;height:44px}
+      .found-badge{
+        position:absolute;top:12px;left:12px;
+        background:var(--grad);color:#fff;
+        font-size:.68rem;font-weight:800;letter-spacing:.12em;
+        padding:6px 11px;border-radius:8px;
+        box-shadow:0 8px 18px rgba(217,70,239,.4);
+      }
+      .plat-badge{
+        position:absolute;top:12px;right:12px;
+        background:rgba(8,8,24,.55);color:#fff;
+        -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+        border:1px solid rgba(255,255,255,.25);
+        font-size:.74rem;font-weight:800;padding:6px 11px;border-radius:8px;
+      }
+      .result-title{margin-top:16px;font-size:1.22rem;font-weight:700;font-family:"Sora",sans-serif;line-height:1.3}
+      .result-meta{margin-top:9px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+      .meta-pill{
+        display:inline-flex;align-items:center;gap:6px;
+        font-size:.78rem;font-weight:800;padding:5px 11px;border-radius:999px;
+        background:var(--glass-soft);border:1px solid var(--line);color:var(--ink-2);
+        max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+      }
+      .meta-pill svg{width:13px;height:13px;flex:0 0 13px}
+      .meta-pill.link{color:var(--pink);text-decoration:none}
+      .meta-pill.link:hover{text-decoration:underline}
+      .formats-head{display:flex;align-items:center;gap:10px;margin:22px 0 12px}
+      .formats-head svg{width:16px;height:16px;color:var(--pink)}
+      .formats-title{font-size:.82rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+      .count-pill{
+        margin-left:auto;background:rgba(139,92,246,.16);color:var(--accent);
+        border:1px solid rgba(168,85,247,.35);
+        font-size:.74rem;font-weight:800;padding:5px 11px;border-radius:999px;white-space:nowrap;
+      }
+      .format-list{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+      .format-item{
+        display:flex;align-items:center;gap:12px;
+        border:1px solid var(--line);border-radius:15px;
+        padding:13px 14px;background:var(--glass-soft);
+      }
+      .format-item.best{
+        background:linear-gradient(120deg,rgba(139,92,246,.20),rgba(217,70,239,.13));
+        border-color:rgba(168,85,247,.5);
+      }
+      .f-icon{
+        width:40px;height:40px;flex:0 0 40px;border-radius:11px;
+        background:var(--glass-strong);border:1px solid var(--line);color:var(--accent);
+        display:flex;align-items:center;justify-content:center;
+      }
+      .format-item.best .f-icon{background:var(--gold-soft);color:var(--gold);border-color:transparent}
+      .f-icon.audio{color:var(--pink)}
+      .f-icon svg{width:20px;height:20px}
+      .f-info{flex:1;min-width:0}
+      .f-quality{font-weight:800;font-size:.94rem;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+      .ext-tag{
+        font-size:.64rem;font-weight:800;letter-spacing:.06em;
+        background:rgba(96,165,250,.2);color:#60a5fa;
+        padding:2.5px 7px;border-radius:6px;
+      }
+      .ext-tag.mp3{background:rgba(244,114,182,.18);color:var(--pink)}
+      .f-sub{font-size:.78rem;color:var(--ink-3);font-weight:700}
+      .dl-btn{
+        display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+        background:var(--glass-strong);border:1px solid var(--line);color:var(--ink);
+        font-weight:800;font-size:.87rem;
+        padding:10px 15px;border-radius:10px;white-space:nowrap;
+      }
+      .dl-btn:hover{border-color:var(--accent);color:var(--accent)}
+      .dl-btn svg{width:15px;height:15px}
+      .format-item.best .dl-btn{background:var(--grad);border:none;color:#fff;box-shadow:0 8px 20px rgba(217,70,239,.35)}
+      .format-item.best .dl-btn:hover{filter:brightness(1.08);color:#fff}
+
+      /* ---------- History ---------- */
+      .history{display:none;margin:20px 6px 4px}
+      .history.show{display:block}
+      .history h3{font-size:.92rem;margin-bottom:10px}
+      .history-list{display:grid;gap:8px}
+      .history-item{
+        display:flex;align-items:center;gap:11px;text-align:left;width:100%;
+        background:var(--glass-soft);border:1px solid var(--line);border-radius:11px;
+        padding:10px 13px;color:var(--ink);
+      }
+      .history-item:hover{border-color:var(--accent)}
+      .history-item svg{width:17px;height:17px;color:var(--ink-3);flex:0 0 17px}
+      .history-item .h-title{font-weight:700;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .history-item .h-plat{font-size:.76rem;font-weight:800;color:var(--accent);flex:0 0 auto}
+
+      /* ---------- Feature cards (from old UI) ---------- */
+      .features{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:30px;text-align:left}
+      .feature{border-radius:var(--radius);padding:24px 22px}
+      .feature .fi{
+        width:46px;height:46px;border-radius:13px;margin-bottom:16px;
+        display:flex;align-items:center;justify-content:center;
+      }
+      .feature .fi svg{width:23px;height:23px}
+      .fi-violet{background:rgba(139,92,246,.18);color:var(--violet)}
+      .fi-pink{background:rgba(236,72,153,.16);color:var(--pink)}
+      .fi-green{background:rgba(34,197,94,.16);color:#22c55e}
+      .feature h3{font-size:1.03rem;margin-bottom:7px}
+      .feature p{margin:0;color:var(--ink-2);font-size:.92rem;font-weight:500}
+
+      /* ---------- Sections ---------- */
+      section.block{padding:52px 0 6px}
+      .section-head{max-width:640px}
+      .section-head h2{font-size:1.55rem;font-weight:800;letter-spacing:-.01em}
+      .section-head p{color:var(--ink-2);font-weight:500;margin:10px 0 0}
+      .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:24px}
+      .step{border-radius:var(--radius);padding:24px 22px}
+      .step-num{
+        width:38px;height:38px;border-radius:11px;background:var(--grad);color:#fff;
+        font-family:"Sora",sans-serif;font-weight:800;display:flex;align-items:center;justify-content:center;
+        margin-bottom:14px;box-shadow:0 8px 18px rgba(168,85,247,.35);
+      }
+      .step h3{font-size:1.02rem;margin-bottom:7px}
+      .step p{margin:0;color:var(--ink-2);font-size:.93rem;font-weight:500}
+
+      .plat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
+      .plat{border-radius:var(--radius);padding:22px 16px;text-align:center}
+      .plat .p-icon{
+        width:48px;height:48px;margin:0 auto 12px;border-radius:13px;
+        background:var(--glass-strong);border:1px solid var(--line);
+        display:flex;align-items:center;justify-content:center;color:var(--ink);
+      }
+      .plat .p-icon svg{width:24px;height:24px}
+      .plat h3{font-size:.98rem}
+      .plat p{margin:5px 0 0;font-size:.83rem;color:var(--ink-3);font-weight:600}
+
+      .faq{margin-top:24px;display:grid;gap:10px}
+      .faq details{border-radius:15px;padding:16px 18px}
+      .faq summary{font-weight:800;cursor:pointer;font-size:.97rem}
+      .faq p{margin:9px 0 0;color:var(--ink-2);font-weight:500;font-size:.93rem}
+
+      footer{margin-top:60px;padding:0 0 30px}
+      .foot-card{border-radius:24px;padding:32px 24px 28px;text-align:center}
+      .foot-mark{
+        width:46px;height:46px;margin:0 auto 13px;border-radius:13px;
+        background:var(--grad);color:#fff;
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:0 10px 24px rgba(168,85,247,.4);
+      }
+      .foot-mark svg{width:24px;height:24px}
+      .foot-name{font-family:"Sora",sans-serif;font-weight:800;font-size:1.08rem}
+      .foot-sub{color:var(--ink-2);font-weight:600;font-size:.9rem;margin-top:5px}
+      .credit{margin-top:16px;font-weight:800;font-size:1rem;color:var(--ink)}
+      .credit .heart{color:#e0245e}
+
+      /* ---------- Mobile ---------- */
+      @media (max-width:760px){
+        .hero{padding:38px 0 4px}
+        .dl-row{flex-direction:column}
+        #fetchBtn{justify-content:center;width:100%}
+        #urlInput{padding-right:142px}
+        .format-list{grid-template-columns:1fr}
+        .features{grid-template-columns:1fr}
+        .steps{grid-template-columns:1fr}
+        .plat-grid{grid-template-columns:repeat(2,1fr)}
+        .live-pill{padding:6px 10px;font-size:.72rem;gap:6px}
+        .brand-name{font-size:.88rem}
+        .brand-tag{font-size:.62rem}
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="topbar">
+      <div class="wrap topbar-in">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">Afridi Multi Downloader</div>
+          <div class="brand-tag">By Ilyas Afridi</div>
+        </div>
+        <div class="spacer"></div>
+        <span class="live-pill checking" id="serverPill" role="status" aria-live="polite" title="Server status — dubara check karne ke liye tap karo"><span class="live-dot"></span><span id="serverPillText">Checking…</span></span>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="wrap">
+        <span class="hero-badge"><span class="pulse"></span>Powered by <b>Afridi Engine</b> — fast &amp; free</span>
+
+        <h1>Download Any Media from <span class="grad">Any Platform</span></h1>
+        <p class="lead">Instagram, YouTube, TikTok, Facebook ya audio streams — video ka link paste karo. Fast, free, HD quality, instant server extraction ke saath.</p>
+
+        <div class="platform-chips" aria-label="Supported platforms">
+          <span class="chip"><svg class="c-insta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</span>
+          <span class="chip"><svg class="c-yt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48" fill="currentColor" stroke="none"/></svg>YouTube</span>
+          <span class="chip"><svg class="c-tt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>TikTok</span>
+          <span class="chip"><svg class="c-fb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</span>
+          <span class="chip"><svg class="c-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>&amp; More</span>
+        </div>
+
+        <div class="console glass">
+          <form class="dl-row" id="dlForm">
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              <input id="urlInput" type="url" inputmode="url" autocomplete="off" spellcheck="false" aria-label="Video link"
+                     placeholder="https://www.youtube.com/watch?v=… ya koi bhi video link" />
+              <div class="input-actions">
+                <button type="button" class="mini-btn" id="pasteBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>Paste</button>
+                <button type="button" class="mini-btn" id="clearBtn" hidden>Clear</button>
+              </div>
+            </div>
+            <button type="submit" id="fetchBtn">
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+              Fetch Video
+            </button>
+          </form>
+          <div class="console-foot">
+            <div class="detected" id="detected" aria-live="polite"></div>
+            <p class="hint">Tip: Video app mein Share dabao, “Copy link” karo, phir yahan paste kar do.</p>
+          </div>
+
+          <div class="status-box" id="statusBox" role="status"></div>
+
+          <div class="result" id="resultBox">
+            <div class="thumb-wrap" id="thumbSlot"></div>
+            <div class="result-title" id="resTitle"></div>
+            <div class="result-meta" id="resMeta"></div>
+            <div class="formats-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span class="formats-title">Available Download Formats</span>
+              <span class="count-pill" id="countPill"></span>
+            </div>
+            <div class="format-list" id="formatList"></div>
+          </div>
+
+          <div class="history" id="historyBox">
+            <h3>Is session ki recent searches</h3>
+            <div class="history-list" id="historyList"></div>
+          </div>
+        </div>
+
+        <div class="features">
+          <div class="feature glass">
+            <div class="fi fi-violet"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg></div>
+            <h3>High Speed Downloads</h3>
+            <p>Direct links server API se foran generate hote hain — maximum bandwidth support ke saath, bina wait kiye.</p>
+          </div>
+          <div class="feature glass">
+            <div class="fi fi-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
+            <h3>Multiple Resolutions</h3>
+            <p>HD 1080p, 720p, 480p videos extract karo, ya streams ko seedha MP3 audio files mein convert karo.</p>
+          </div>
+          <div class="feature glass">
+            <div class="fi fi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
+            <h3>No Registration</h3>
+            <p>100% free — na sign-up, na koi key ya restriction. Safe, clean aur lightweight tool, har device ke liye.</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="block" aria-labelledby="howTitle">
+        <div class="section-head">
+          <h2 id="howTitle">Kaise kaam karta hai?</h2>
+          <p>Sirf teen steps — poora process ek minute se bhi kam mein ho jata hai.</p>
+        </div>
+        <div class="steps">
+          <div class="step glass">
+            <div class="step-num">1</div>
+            <h3>Link copy karo</h3>
+            <p>Jis video ko download karna hai, us app mein Share button se us ka link copy karo — YouTube, TikTok, Instagram, koi bhi.</p>
+          </div>
+          <div class="step glass">
+            <div class="step-num">2</div>
+            <h3>Yahan paste karo</h3>
+            <p>Upar wale box mein link paste karke “Fetch Video” dabao. Tool video ki details aur tamam available qualities dhoond layega.</p>
+          </div>
+          <div class="step glass">
+            <div class="step-num">3</div>
+            <h3>Quality choose karke download karo</h3>
+            <p>Best Quality, Full HD, HD — jo size aur quality chahiye us ke samne Download dabao, file save ho jayegi.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="platTitle">
+        <div class="section-head">
+          <h2 id="platTitle">Supported platforms</h2>
+          <p>Ek hi tool se in platforms ke public video links download karo. Jo quality available hogi, wahi list mein nazar aayegi.</p>
+        </div>
+        <div class="plat-grid">
+          <div class="plat glass">
+            <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48" fill="currentColor" stroke="none"/></svg></div>
+            <h3>YouTube</h3>
+            <p>Videos aur Shorts, multiple qualities mein</p>
+          </div>
+          <div class="plat glass">
+            <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg></div>
+            <h3>TikTok</h3>
+            <p>HD aur Full HD options ke saath</p>
+          </div>
+          <div class="plat glass">
+            <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></div>
+            <h3>Instagram</h3>
+            <p>Reels aur public video posts</p>
+          </div>
+          <div class="plat glass">
+            <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></div>
+            <h3>Facebook</h3>
+            <p>Public videos aur watch links</p>
+          </div>
+          <div class="plat glass">
+            <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16M20 4L4 20" stroke-width="2.4"/></svg></div>
+            <h3>Twitter / X</h3>
+            <p>Posts mein lagi hui videos</p>
+          </div>
+          <div class="plat glass">
+            <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+            <h3>Dailymotion &amp; Vimeo</h3>
+            <p>Aur dusre video platforms</p>
+          </div>
+          <div class="plat glass">
+            <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+            <h3>Audio (MP3)</h3>
+            <p>Jahan audio format available ho</p>
+          </div>
+          <div class="plat glass">
+            <div class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+            <h3>Aur bhi platforms</h3>
+            <p>Link paste karke try karo — aksar chal jata hai</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="faqTitle">
+        <div class="section-head">
+          <h2 id="faqTitle">Aam sawalat</h2>
+        </div>
+        <div class="faq">
+          <details class="glass">
+            <summary>Kya ye tool bilkul free hai?</summary>
+            <p>Haan, Afridi Multi Downloader bilkul free hai — na sign-up chahiye, na koi app install karna hai. Bas link paste karo aur download karo.</p>
+          </details>
+          <details class="glass">
+            <summary>Download ki hui video kahan save hoti hai?</summary>
+            <p>Download dabate hi file tumhare browser ke default Downloads folder mein save hoti hai — phone par Gallery/Downloads mein mil jayegi.</p>
+          </details>
+          <details class="glass">
+            <summary>Kabhi kabhi “koi format nahi mila” kyun aata hai?</summary>
+            <p>Agar video private ho, delete ho chuki ho, ya us platform ne access block kar diya ho to formats nahi milte. Link dobara check karke phir try karo — public videos par ye tool best kaam karta hai.</p>
+          </details>
+          <details class="glass">
+            <summary>Kya main doosron ki videos re-upload kar sakta hoon?</summary>
+            <p>Ye tool personal use ke liye hai — apni videos ya woh content download karo jis ki tumhare paas permission ho. Copyright wali videos ko bina ijazat re-upload karna platform ki policies ke khilaf hai.</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="foot-card glass">
+          <div class="foot-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <div class="foot-name">Afridi Multi Downloader</div>
+          <p class="foot-sub">Fast &amp; free video downloader — YouTube, TikTok, Instagram, Facebook, Twitter aur bohat kuch.</p>
+          <p class="credit">Developed with <span class="heart">♥️</span> By Ilyas Afridi</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+(function(){var _a=atob("aHR0cHM6Ly9hZnJpZGktZG93bmxvYWRlci1hcGkudmVyY2VsLmFwcC9hcGk="),f=document.getElementById("dlForm"),i=document.getElementById("urlInput"),b=document.getElementById("fetchBtn"),pb=document.getElementById("pasteBtn"),cb=document.getElementById("clearBtn"),dt=document.getElementById("detected"),sb=document.getElementById("statusBox"),rb=document.getElementById("resultBox"),ts=document.getElementById("thumbSlot"),rt=document.getElementById("resTitle"),rm=document.getElementById("resMeta"),cp=document.getElementById("countPill"),fl=document.getElementById("formatList"),hb=document.getElementById("historyBox"),hl=document.getElementById("historyList"),sp=document.getElementById("serverPill"),spt=document.getElementById("serverPillText"),H=[];var V='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',AU='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',ST='<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>',DL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',AL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',LK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',US='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',EX='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';function dp(u){u=(u||"").toLowerCase();if(/youtube\.com|youtu\.be/.test(u))return"YouTube";if(/tiktok\.com/.test(u))return"TikTok";if(/instagram\.com/.test(u))return"Instagram";if(/facebook\.com|fb\.watch|fb\.com/.test(u))return"Facebook";if(/twitter\.com|x\.com/.test(u))return"Twitter / X";if(/dailymotion\.com|dai\.ly/.test(u))return"Dailymotion";if(/vimeo\.com/.test(u))return"Vimeo";if(/snapchat\.com/.test(u))return"Snapchat";if(/pinterest\.|pin\.it/.test(u))return"Pinterest";if(/reddit\.com/.test(u))return"Reddit";if(/twitch\.tv/.test(u))return"Twitch";if(/likee|moj|josh/.test(u))return"Short Video App";return null}function yt(u){if(!u)return"";var m=String(u).match(/(?:youtube\.com\/(?:watch\?[^#]*v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);return m?"https://i.ytimg.com/vi/"+m[1]+"/hqdefault.jpg":""}function vu(t){try{var p=new URL(t);return p.protocol==="http:"||p.protocol==="https:"}catch(e){return false}}function ud(){var v=i.value.trim();cb.hidden=!v;if(!v){dt.textContent="";return}var p=dp(v);if(p)dt.innerHTML="Platform detected: <b>"+p+"</b> — Fetch Video dabao.";else if(vu(v))dt.textContent="Link tayyar hai — Fetch Video dabao.";else dt.textContent=""}i.addEventListener("input",ud);pb.addEventListener("click",function(){if(navigator.clipboard&&navigator.clipboard.readText){navigator.clipboard.readText().then(function(t){if(t){i.value=t.trim();ud();i.focus()}}).catch(function(){i.focus()})}else i.focus()});cb.addEventListener("click",function(){i.value="";ud();hs();rb.classList.remove("show");i.focus()});function sl(m){sb.className="status-box show loading";sb.innerHTML='<div class="spinner" aria-hidden="true"></div><div>'+m+'<span id="loadTimer"></span></div>'}function se(m){sb.className="status-box show error";sb.innerHTML=AL+"<div>"+m+"</div>"}function hs(){sb.className="status-box";sb.innerHTML=""}function esc(t){var d=document.createElement("div");d.textContent=t==null?"":String(t);return d.innerHTML}function rr(d2,su){var n=d2.video_info||{},fm=n.available_formats||[];if(!fm.length){rb.classList.remove("show");se("Is link se koi download format nahi mila. Ho sakta hai video private ho, delete ho gayi ho, ya platform ne access block kar diya ho. Link check karke dobara try karo.");return}hs();var tt=n.title||"Media File";rt.textContent=tt;var pl=dp(n.original_url||su),bg='<span class="found-badge">MEDIA FOUND</span>'+(pl?'<span class="plat-badge">'+esc(pl)+"</span>":"");ts.innerHTML="";var th=n.thumbnail||yt(n.original_url||su);if(th){var im=document.createElement("img");im.className="thumb";im.alt="Video thumbnail";im.src=th;im.onerror=function(){ts.innerHTML='<div class="thumb-fallback">'+V+"</div>"+bg};ts.appendChild(im);ts.insertAdjacentHTML("beforeend",bg)}else{ts.innerHTML='<div class="thumb-fallback">'+V+"</div>"+bg}var pi="";if(n.uploader&&n.uploader!=="Unknown Uploader"){pi+='<span class="meta-pill">'+US+esc(n.uploader)+"</span>"}else{pi+='<span class="meta-pill">'+US+"Unknown Uploader</span>"}var ou=n.original_url||su;if(ou){pi+='<a class="meta-pill link" href="'+esc(ou)+'" target="_blank" rel="noopener">'+EX+"Original Link</a>"}pi+='<span class="meta-pill">'+fm.length+(fm.length===1?" format":" formats")+" available</span>";rm.innerHTML=pi;cp.textContent=fm.length+(fm.length===1?" Quality Option":" Quality Options");fl.innerHTML="";var sn={},on=0;fm.forEach(function(x,ix){if(!x||!x.download_url||sn[x.download_url])return;sn[x.download_url]=true;on++;var ia=(x.type||"").toLowerCase()==="audio",q=(x.quality||"Download").replace("⭐","").trim()||"Download",ib=ix===0||/best/i.test(x.quality||""),et=(x.extension||"mp4").toUpperCase(),it=document.createElement("div");it.className="format-item"+(ib?" best":"");it.innerHTML='<div class="f-icon'+(ia?" audio":"")+'">'+(ib?ST:(ia?AU:V))+'</div><div class="f-info"><div class="f-quality">'+esc(q)+'<span class="ext-tag'+(ia?" mp3":"")+'">'+esc(et)+'</span></div><div class="f-sub">Option #'+on+" · "+esc(x.type||"video")+'</div></div><a class="dl-btn" href="'+esc(x.download_url)+'" target="_blank" rel="noopener">'+DL+"Download</a>";fl.appendChild(it)});rb.classList.add("show");rb.scrollIntoView({behavior:"smooth",block:"nearest"});ah(tt,pl,su)}function ah(t,p,u){H=H.filter(function(h){return h.url!==u});H.unshift({title:t,plat:p,url:u});if(H.length>5)H=H.slice(0,5);hl.innerHTML="";H.forEach(function(h){var bt=document.createElement("button");bt.type="button";bt.className="history-item";bt.innerHTML=LK+'<span class="h-title">'+esc(h.title)+"</span>"+(h.plat?'<span class="h-plat">'+esc(h.plat)+"</span>":"");bt.addEventListener("click",function(){i.value=h.url;ud();window.scrollTo({top:0,behavior:"smooth"});if(f.requestSubmit)f.requestSubmit();else fv()});hl.appendChild(bt)});hb.classList.add("show")}function fv(){var u=i.value.trim();if(!u){se("Pehle koi video link paste karo — phir Fetch Video dabao.");i.focus();return}if(!vu(u)){se("Ye link sahi nahi lag raha. Poora link copy karo — https:// se shuru hona chahiye.");return}rb.classList.remove("show");b.disabled=true;var p=dp(u);sl("Video dhoond rahe hain"+(p?" ("+p+")":"")+" — server kaam kar raha hai, thoda intezaar karo");var t0=Date.now(),to=false,ctl=null;try{ctl=new AbortController()}catch(e){}var tm=setTimeout(function(){to=true;try{if(ctl)ctl.abort()}catch(e){}},90000);var iv=setInterval(function(){var el=document.getElementById("loadTimer");if(el)el.textContent=" ("+Math.floor((Date.now()-t0)/1000)+" sec)"},1000);var fo={};if(ctl)fo.signal=ctl.signal;function dn(){clearTimeout(tm);clearInterval(iv)}fetch(_a+"?url="+encodeURIComponent(u),fo).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(d2){dn();if(d2&&d2.error)throw new Error(d2.error);rr(d2,u)}).catch(function(){dn();rb.classList.remove("show");if(to)se("Server ne bohat zyada time le liya (90 sec) — jawab nahi aaya. Thodi der baad dobara Fetch Video dabao.");else se("Server se jawab nahi mila. Internet connection check karo aur dobara try karo — kabhi kabhi platform slow hone par bhi aisa hota hai.")}).finally(function(){dn();b.disabled=false})}function chk(){if(!sp)return;sp.classList.remove("online","offline");sp.classList.add("checking");if(spt)spt.textContent="Checking…";var ctl=null,tm=null;try{ctl=new AbortController()}catch(e){}if(ctl){tm=setTimeout(function(){try{ctl.abort()}catch(e){}},10000)}var o={method:"GET",cache:"no-store"};if(ctl)o.signal=ctl.signal;fetch(_a,o).then(function(r){if(tm)clearTimeout(tm);if(r&&r.status>=500)throw new Error("srv");sp.classList.remove("checking","offline");sp.classList.add("online");if(spt)spt.textContent="Server Online"}).catch(function(){if(tm)clearTimeout(tm);sp.classList.remove("checking","online");sp.classList.add("offline");if(spt)spt.textContent="Server Offline"})}if(sp)sp.addEventListener("click",chk);f.addEventListener("submit",function(e){e.preventDefault();fv()});ud();chk();setInterval(chk,60000)})();
+</script>
+
+  </body>
+</html>
